@@ -1,0 +1,5 @@
+azure_openai:
+  endpoint: "https://YOUR-RESOURCE.openai.azure.com/openai/v1/"
+  deployment: "gpt-6-luna"
+notion:
+  database_id: "3eb045ad636c80cea8d6db74ce6d7390"
