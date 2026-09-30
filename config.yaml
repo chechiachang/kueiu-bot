@@ -1,10 +1,5 @@
-telegram:
-  bot_token: ""
-  allowed_user_ids: []
 azure_openai:
   endpoint: "https://YOUR-RESOURCE.openai.azure.com/openai/v1/"
-  api_key: ""
-  deployment: ""
+  deployment: "gpt-6-luna"
 notion:
-  token: ""
-  database_id: ""
+  database_id: "3eb045ad636c80cea8d6db74ce6d7390"
