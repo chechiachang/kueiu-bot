@@ -1,0 +1,20 @@
+[Unit]
+Description=Kueiu Telegram Bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=kueiu-bot
+Group=kueiu-bot
+EnvironmentFile=/etc/kueiu-bot/kueiu-bot.env
+ExecStart=/usr/local/bin/kueiu-bot --config /etc/kueiu-bot/config.yaml serve
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
