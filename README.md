@@ -52,7 +52,7 @@ On the Linux host, install the files and create the service account:
 ```sh
 sudo useradd --system --user-group --home-dir /nonexistent --shell /usr/sbin/nologin kueiu-bot
 sudo install -d -o root -g root -m 0755 /etc/kueiu-bot
-sudo install -o root -g root -m 0644 dist/kueiu-bot /usr/local/bin/kueiu-bot
+sudo install -o root -g root -m 0755 dist/kueiu-bot /usr/local/bin/kueiu-bot
 sudo install -o root -g root -m 0644 config.yaml /etc/kueiu-bot/config.yaml
 sudo install -o root -g root -m 0600 /dev/null /etc/kueiu-bot/kueiu-bot.env
 sudoedit /etc/kueiu-bot/kueiu-bot.env
