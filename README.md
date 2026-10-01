@@ -21,6 +21,62 @@ Flags can override non-secret config and environment values, for example `--azur
 
 The bot processes delivered user messages and identifiable user-authored channel posts across chat types without requiring a mention; it removes a bot mention when it appears as a Telegram entity. Replies stay in the originating chat or topic. Each request is independent; replies include only the replied-to message and the current request as context.
 
+## Build a Linux binary
+
+Build with Go 1.23 or newer. To cross-compile a Linux AMD64 binary (for ARM64, set `GOARCH=arm64`):
+
+```sh
+mkdir -p dist
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o dist/kueiu-bot .
+```
+
+The output is `dist/kueiu-bot`. Copy it to the Linux host along with `config.yaml` and the environment file described below.
+
+## Publish binaries on GitHub Releases
+
+After the [release workflow](.github/workflows/release.yml) is merged into the default branch, push a version tag to trigger it. The workflow builds Linux AMD64 and ARM64 binaries, generates `SHA256SUMS`, and attaches them to a GitHub Release with generated release notes:
+
+```sh
+git tag -a v1.0.0 -m "v1.0.0"
+git push origin v1.0.0
+```
+
+Replace `v1.0.0` with the next version. Once the workflow finishes, find the release under the repository's **Releases** page. Download both binaries and `SHA256SUMS` into the same directory to verify them with `sha256sum -c SHA256SUMS`, then use the binary matching the host architecture.
+
+## Run as a Linux systemd service
+
+The example unit at [`deploy/kueiu-bot.service`](deploy/kueiu-bot.service) expects the binary at `/usr/local/bin/kueiu-bot`, non-secret configuration at `/etc/kueiu-bot/config.yaml`, and secrets in `/etc/kueiu-bot/kueiu-bot.env`.
+
+On the Linux host, install the files and create the service account:
+
+```sh
+sudo useradd --system --user-group --home-dir /nonexistent --shell /usr/sbin/nologin kueiu-bot
+sudo install -d -o root -g root -m 0755 /etc/kueiu-bot
+sudo install -o root -g root -m 0755 dist/kueiu-bot /usr/local/bin/kueiu-bot
+sudo install -o root -g root -m 0644 config.yaml /etc/kueiu-bot/config.yaml
+sudo install -o root -g root -m 0600 /dev/null /etc/kueiu-bot/kueiu-bot.env
+sudoedit /etc/kueiu-bot/kueiu-bot.env
+```
+
+Add these values to the environment file (do not commit it):
+
+```dotenv
+TELEGRAM_BOT_TOKEN=...
+AZURE_OPENAI_API_KEY=...
+NOTION_TOKEN=...
+```
+
+The unit loads the environment file through systemd and starts the bot with the explicit config path. Install and start it with:
+
+```sh
+sudo install -o root -g root -m 0644 deploy/kueiu-bot.service /etc/systemd/system/kueiu-bot.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now kueiu-bot
+sudo journalctl -u kueiu-bot -f
+```
+
+Update Azure OpenAI deployment/endpoint and the Notion database ID in `/etc/kueiu-bot/config.yaml`, then restart with `sudo systemctl restart kueiu-bot`.
+
 ## Group troubleshooting
 
 Send `@KueYuBot hello` in the group, selecting the bot from Telegram's mention suggestions. Telegram's privacy mode does **not** deliver plain @mentions to non-admin bots. To handle group mentions, use BotFather's `/setprivacy` to disable privacy for `@KueYuBot`, then remove and re-add it to the group. Alternatively, making the bot a group administrator allows it to receive all messages. The startup log's `can_join_groups` and `can_read_all_group_messages` fields show the bot's current BotFather settings; for a non-admin bot, `can_read_all_group_messages` must be `true` to receive plain mentions.

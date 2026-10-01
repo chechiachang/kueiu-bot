@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish Linux binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build Linux binaries
+        run: |
+          mkdir -p dist
+          for arch in amd64 arm64; do
+            CGO_ENABLED=0 GOOS=linux GOARCH="$arch" go build \
+              -trimpath -ldflags="-s -w" \
+              -o "dist/kueiu-bot-linux-${arch}" .
+          done
+          cd dist
+          sha256sum kueiu-bot-linux-* > SHA256SUMS
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/kueiu-bot-linux-* dist/SHA256SUMS \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
