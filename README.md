@@ -21,6 +21,18 @@ Flags can override non-secret config and environment values, for example `--azur
 
 The bot processes delivered user messages and identifiable user-authored channel posts across chat types without requiring a mention; it removes a bot mention when it appears as a Telegram entity. Replies stay in the originating chat or topic. Each request is independent; replies include only the replied-to message and the current request as context.
 
+## Notion Select columns
+
+Ask the assistant to add a Select column, for example “Add a Note type column with instruction and record options.” It updates only the configured database. If the Select column already exists, missing options are added while existing options and page values are preserved. A column with a different type is left unchanged.
+
+The assistant can also recolor existing Select options, for example “Set Note type: instruction to blue and record to green.” If you ask for different colors without specifying them, it chooses distinct colors. Other options and their colors are preserved. Follow-up requests must include the property and action or use Telegram Reply to include the relevant message; the bot does not retain conversation history.
+
+## Notion table sorting
+
+The assistant can list and inspect saved database views and update their saved property sort order. For example, ask “Sort the table by Date, newest to oldest” (`descending`) or “oldest to newest” (`ascending`). If several views match, specify the view name. Query sorting alone only affects returned results.
+
+View operations use Notion API version `2026-03-11`; existing database/page operations retain `2022-06-28`. View changes are restricted to views whose parent is the configured database. The integration needs access and permission to update that view.
+
 ## Build a Linux binary
 
 Build with Go 1.23 or newer. To cross-compile a Linux AMD64 binary (for ARM64, set `GOARCH=arm64`):
